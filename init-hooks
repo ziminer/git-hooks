@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Setup symlinks so that git uses the hooks in git-hooks instead
+# of hooks in the default location. Moves existing hooks
+# to personal/.
+
+
+ROOT_DIR=$(git rev-parse --show-toplevel)
+# Default hooks directory
+DEF_HOOK_DIR=${ROOT_DIR}/.git/hooks
+# Directory that this script is in
+GIT_HOOKS_DIR=${ROOT_DIR}/git-hooks
+# Directory for personal hook scripts
+PERSONAL_DIR=${GIT_HOOKS_DIR}/personal
+
+# All the local git hook names
+HOOK_NAMES=$(cat ${GIT_HOOKS_DIR}/hook-names)
+
+if [ "${PLATFORM}" == "docker" ]; then
+   echo "Not initializing hooks because PLATFORM == docker"
+else
+   for hook in ${HOOK_NAMES}; do
+      # If there is a pre-existing hook, copy it to the personal directory
+      if [ ! -h ${DEF_HOOK_DIR}/${hook} -a -f ${DEF_HOOK_DIR}/${hook} ]; then
+         (set -x; mv ${DEF_HOOK_DIR}/${hook} ${PERSONAL_DIR}/${hook}-local)
+      fi
+   
+      # Create a symlink to the common hook wrapper, overwriting existing symlinks
+      # if necessary.
+      ln -s -f ${GIT_HOOKS_DIR}/hooks-wrapper ${DEF_HOOK_DIR}/${hook}
+   done
+fi

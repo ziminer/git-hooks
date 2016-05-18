@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Remove symlinks created by init-hooks.
+
+ROOT_DIR=$(git rev-parse --show-toplevel)
+DEF_HOOK_DIR=${ROOT_DIR}/.git/hooks
+
+# All the local git hook names
+HOOK_NAMES=$(cat ${ROOT_DIR}/git-hooks/hook-names)
+
+for hook in ${HOOK_NAMES}; do
+   if [ -h ${DEF_HOOK_DIR}/${hook} ]; then
+      (set -x; rm ${DEF_HOOK_DIR}/${hook})
+   fi
+done

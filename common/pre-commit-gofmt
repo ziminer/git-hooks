@@ -1,0 +1,16 @@
+#!/bin/bash
+
+gofiles=$(git diff --cached --name-only --diff-filter=ACM | grep '.go$')
+[ -z "$gofiles" ] && exit 0
+
+unformatted=$(gofmt -l $gofiles)
+[ -z "$unformatted" ] && exit 0
+
+echo "Running gofmt on unformatted files..."
+# Log the commands we're running
+for filename in $unformatted; do
+   (set -x; gofmt -w $filename)
+   (set -x; git add $filename)
+done
+
+exit 0
